@@ -48,33 +48,33 @@ MODULE_DESCRIPTION("Hardware watchdog driver for Sun RIO");
 MODULE_SUPPORTED_DEVICE("watchdog");
 MODULE_LICENSE("GPL");
 
-#define DRIVER_NAME	"riowd"
+#define DRIVER_NAME	"dummy_testing"
 
 struct riowd {
 	void __iomem		*regs;
 	spinlock_t		lock;
 };
-static int riowd_open(struct inode *inode, struct file *filp)
+static int dummy_open(struct inode *inode, struct file *filp)
 {
 	nonseekable_open(inode, filp);
 	return 0;
 }
 
-static int riowd_release(struct inode *inode, struct file *filp)
+static int dummy_release(struct inode *inode, struct file *filp)
 {
 	return 0;
 }
 static const struct file_operations riowd_fops = {
 	.owner =		THIS_MODULE,
-	.open =			riowd_open,
-	.release =		riowd_release,
+	.open =			dummy_open,
+	.release =		dummy_release,
 };
 
 
-static struct platform_driver riowd_driver = {
+static struct platform_driver dummy_driver = {
 	.driver = {
 		.name = DRIVER_NAME,
 	},
 };
 
-module_platform_driver(riowd_driver);
+module_platform_driver(dummy_driver);
