@@ -1,5 +1,5 @@
 obj-m	:=practice.o
-KDIR 	:=/home/paul/Panzer/4.14_linux-imx
+KDIR 	:=/home/paul/Panzer/4_14_linux
 MYCC		=/home/paul/opt/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-
 
 # The KDIR must have to assign a ./direction
