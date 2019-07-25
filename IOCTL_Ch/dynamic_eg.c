@@ -12,6 +12,33 @@
 #define CASE_ZERO 0
 #define CASE_ONE 1
 
+/*
+ *
+ *	"copy from user"
+ *	if (copy_to_user(buf, (void*)(dev->mem + p), count))
+ *	{
+ *		ret =  - EFAULT;
+ *	}
+ *	else
+ *	{
+ *		*ppos += count;
+ *	    ret = count;
+ *	    printk(KERN_INFO "read %d bytes(s) from %d\n", count, p);
+ *	}
+ */
+
+/*	copy to user
+ * if (copy_to_user(buf, (void*)(dev->mem + p), count))
+ * {
+ * 		ret =  - EFAULT;
+ * }
+ * else
+ * {
+ *		*ppos += count;
+ *		ret = count;
+ *		printk(KERN_INFO "read %d bytes(s) from %d\n", count, p);
+ * }
+ */
 
 static int dev_open(struct inode *inode, struct file *file)
 {
@@ -24,19 +51,35 @@ static int	dev_release(struct inode *inode, struct file *file)
     pr_info("DYNCHDEV: Device close\n");
     return 0;
 }
-
-
+/*
+ *	copy from user
+ *	copy to user
+ */
 static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	char buffer[8];
 	/*get data */
+	/*
+	struct buffer {
+		char kernel_buffer[16];
+		char usr_buffer[16];
+	};
+	struct buffer BUFR = {
+		.usr_buffer = "fuck you too"
+	};
+	*/
+	//struct buffer *ptr = BUFR;
+	char krnl_buffer[16];
+	char usr_buffer[16] = "fuck you too";
 	pr_info("FUNCTION: %s & cmd's val is %d\n",__func__,cmd);
 	switch(cmd) {
         case CASE_ZERO:
-			pr_info("excuted case0 sucessed\n");
+			if(copy_from_user(&krnl_buffer, (void __user *)arg, sizeof(krnl_buffer)))
+        		return -EFAULT;
+			pr_info("copy message form user is %s\n",krnl_buffer);
 			break;
         case CASE_ONE:
-			pr_info("excuted cased1 sucessed\n");
+			if(copy_to_user((void __user *)arg,&usr_buffer,sizeof(usr_buffer)))
+				return -EFAULT;
 			break;
         default:
             pr_info("Unvailbe Command,function don't support \n");
