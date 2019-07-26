@@ -12,33 +12,6 @@
 #define CASE_ZERO 0
 #define CASE_ONE 1
 
-/*
- *
- *	"copy from user"
- *	if (copy_to_user(buf, (void*)(dev->mem + p), count))
- *	{
- *		ret =  - EFAULT;
- *	}
- *	else
- *	{
- *		*ppos += count;
- *	    ret = count;
- *	    printk(KERN_INFO "read %d bytes(s) from %d\n", count, p);
- *	}
- */
-
-/*	copy to user
- * if (copy_to_user(buf, (void*)(dev->mem + p), count))
- * {
- * 		ret =  - EFAULT;
- * }
- * else
- * {
- *		*ppos += count;
- *		ret = count;
- *		printk(KERN_INFO "read %d bytes(s) from %d\n", count, p);
- * }
- */
 
 static int dev_open(struct inode *inode, struct file *file)
 {
@@ -52,13 +25,23 @@ static int	dev_release(struct inode *inode, struct file *file)
     return 0;
 }
 /*
- *	copy from user
- *	copy to user
+ *	Usins structure as the structure to exchange data is a bad idea
+ *	But this way is not good because the buffer should be
+ *	continuous memory block,hence if the buufer is overflow
+ *	the data what we stored could not know.
+ *	e.g:
+ *	struct buffer {
+ *		char kernel_buffer[16];
+ *		char usr_buffer[16];
+ *	};
+ *	What if the kernel buffer stored 18 byte string that means
+ *	when we get data would get part of it, the data would
+ *	be wrong.
  */
+/*
 static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	/*get data */
-	/*
+
 	struct buffer {
 		char kernel_buffer[16];
 		char usr_buffer[16];
@@ -66,19 +49,18 @@ static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct buffer BUFR = {
 		.usr_buffer = "fuck you too"
 	};
-	*/
-	//struct buffer *ptr = BUFR;
+	struct buffer *ptr = &BUFR;
 	char krnl_buffer[16];
 	char usr_buffer[16] = "fuck you too";
 	pr_info("FUNCTION: %s & cmd's val is %d\n",__func__,cmd);
 	switch(cmd) {
         case CASE_ZERO:
-			if(copy_from_user(&krnl_buffer, (void __user *)arg, sizeof(krnl_buffer)))
+			if(copy_from_user((void *)ptr, (void __user *)arg, sizeof(BUFR)))
         		return -EFAULT;
 			pr_info("copy message form user is %s\n",krnl_buffer);
 			break;
         case CASE_ONE:
-			if(copy_to_user((void __user *)arg,&usr_buffer,sizeof(usr_buffer)))
+			if(copy_to_user((void __user *)arg,ptr,sizeof(BUFR)))
 				return -EFAULT;
 			break;
         default:
@@ -87,6 +69,35 @@ static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
     }
    	pr_info("DYNCHDEV: Device ioctl\n");
     return 0;
+}
+*/
+
+
+static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	//get data
+	char krnl_buffer[16] = {0};
+	char usr_buffer[16] = "fuck you too";
+
+	char *krnlptr = krnl_buffer;
+	char *usrptr = usr_buffer;
+	pr_info("FUNCTION: %s & cmd's val is %d\n",__func__,cmd);
+	switch(cmd) {
+		case CASE_ZERO:
+			if(copy_from_user((void *)krnlptr,(void __user *)arg, sizeof(krnl_buffer)))
+				return -EFAULT;
+			pr_info("copy message form user is %s\n",krnl_buffer);
+			break;
+		case CASE_ONE:
+			if(copy_to_user((void __user *)arg,usrptr,sizeof(usr_buffer)))
+				return -EFAULT;
+			break;
+		default:
+			pr_info("Unvailbe Command,function don't support \n");
+			break;
+	}
+	pr_info("DYNCHDEV: Device ioctl\n");
+	return 0;
 }
 
 static const struct file_operations dynamic_fops = {
