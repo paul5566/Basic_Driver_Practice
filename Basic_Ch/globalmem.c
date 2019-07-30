@@ -155,7 +155,7 @@ static ssize_t globalmem_read(
     Using dev->mem of offset `p` as the beginninf of the memory,
 	copy to count to the user spcae buffer
 */
-/*
+
 	if (copy_to_user(buf, (void*)(dev->mem + p), count))
     {
         ret =  - EFAULT;
@@ -167,7 +167,6 @@ static ssize_t globalmem_read(
 
         printk(KERN_INFO "read %d bytes(s) from %d\n", count, p);
     }
-*/
     return ret;
 }
 
@@ -193,8 +192,7 @@ static ssize_t globalmem_write(
     {
         count = GLOBALMEM_SIZE - p;
     }
-	/*
-    if (copy_from_user(dev->mem + p, buf, count) != 0)
+    if (copy_from_user(dev->mem[p], buf, count) != 0)
     {
         ret =  - EFAULT;
     }
@@ -205,7 +203,6 @@ static ssize_t globalmem_write(
 
         printk(KERN_INFO "written %d bytes(s) from %d\n", count, p);
     }
-	*/
     return ret;
 }
 
