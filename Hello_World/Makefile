@@ -1,6 +1,6 @@
-obj-m	:=gpio_hello.o
-KDIR 	:=/home/paul/Panzer/4_14_linux
-MYCC		=/home/paul/opt/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-
+obj-m	:=hello_module.o
+KDIR 	:=/home/paul/Panzer/linux-imx_4_9
+MYCC		=/home/paul/opt/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-
 
 # The KDIR must have to assign a ./direction
 modules:
