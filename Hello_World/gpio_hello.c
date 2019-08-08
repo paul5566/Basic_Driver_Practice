@@ -62,10 +62,9 @@ MODULE_LICENSE("Dual BSD/GPL");
 static int __init gpio_hello_init(void)
 {
 	int error;
-
+	int t;
 
 	if ( gpio_is_valid(137) ){
-			mutex_lock(&gpio_lock);
 			pr_info("start of the module\n");
 			error = gpio_request(137,"gpio-led");
 			if (error < 0) {
@@ -73,35 +72,35 @@ static int __init gpio_hello_init(void)
 				return error;
 			}
 			gpio_direction_output(137,true);
-			gpio_set_value(137, true);
-			msleep(15);
-			mutex_unlock(&gpio_lock);
+
+			for(t = 0;t < 5 ;t++){
+				gpio_set_value(137, true);
+				pr_info("wait\n");
+				msleep(50);
+				gpio_set_value(137, false);
+			}
 			return 0;
 	}
-	else
-		goto fail;
-
-//failed issue
-fail:
-	if (gpio_is_valid(137))
-		gpio_free(137);
-
-	return error;
-
+	//failed issue: The gpio_hello_world is not valid
+	else	{
+		gpio_free(138);
+		return error;
+	}
 }
 
 
 static void __exit gpio_hello_exit(void)
 {
+	gpio_set_value(137,false);
 	pr_info("end of the module\n");
+	gpio_free(137);
 }
-/*
- *  load a Linux driver
- */
+//load module
 module_init(gpio_hello_init);
-/*
- * unload the Linux driver
- */
+//exit module
 module_exit(gpio_hello_exit);
+
+
+
 MODULE_AUTHOR("Boring Chen <eric20021232000@gmail.com>");
 MODULE_LICENSE("GPL");
