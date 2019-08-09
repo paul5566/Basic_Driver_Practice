@@ -47,6 +47,9 @@
 #include <linux/of_gpio.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
+#include <linux/sched.h>//wake_up_process()
+#include <linux/kthread.h>//kthread_create()﹜kthread_run()
+#include <linux/version.h>
 
 /*Define LED Light*/
 #define led_green 137
@@ -95,9 +98,11 @@ static const char *phy_state_to_str(enum phy_state st)
 	return NULL;
 }
 /**
- * gpio_blink - Convenience function to make notifiction
- * @Sucessfully: return 0
- * @Failed: return -1
+ * gpio_blink function: - Convenience function to make notifiction
+ *
+ * Satement:
+ * 		@Sucessfully: return 0
+ * 		@Failed: return -1
  */
 
 int gpio_blink(void)
@@ -120,15 +125,51 @@ int gpio_blink(void)
 	return 0;
 }
 
+/**
+ * function_thread - Convenience function to execute the thread
+ * 					to avoid the CPU keep running call funciton
+ * 					gpio_blink
+ * @led_failed: the statement of gpio_blink function
+ *
+ * statement:
+ *		@Sucessfully:return 0
+ * 		@Failed:return -1
+ *		* the led of gpio is not valid
+ */
+
+
+static int function_thread(void *d)
+{
+	int i;
+	int led_failed;
+
+	// TODO: Put LED operation here
+
+	for (i = 0; i < 5; ++i) {
+		pr_info("Hi! The %s (%d)nd\n", __func__, i);
+		led_failed = gpio_blink();
+		if(led_failed){
+			pr_info("Function:blink led failed\n");
+			return led_failed;
+		}
+	}
+	return 0;
+}
+
 
 /**
  * phy_print_status - Convenience function to print out the current phy status
  * @phydev: the phy_device struct
+ * @task_struct:Each entities that can be scheduled are allocated a process descriptor
+ * @
  */
 void phy_print_status(struct phy_device *phydev)
 {
 	int check_blink;
-	gpio_direction_output(led_green,true);
+	struct task_struct *t;
+
+
+	gpio_direction_output(led_green,false);
 
 	if (phydev->link) {
 		netdev_info(phydev->attached_dev,
@@ -139,7 +180,11 @@ void phy_print_status(struct phy_device *phydev)
 	} else	{
 		netdev_info(phydev->attached_dev, "Link is Down\n");
 		pr_info("Call Blink LED Dunction\n");
-		check_blink = gpio_blink();
+
+		t = kthread_run(function_thread, NULL, "foo_thread");
+		if (IS_ERR(t)) {
+			pr_err("foo thread create failed!\n");
+		}
 		if(check_blink)
 		{
 			pr_info("failed to call blink function\n");
