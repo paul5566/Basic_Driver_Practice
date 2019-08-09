@@ -106,27 +106,11 @@ void blink(int num)
 	gpio_set_value(num, 0);
 	msleep(100);
 }
-int gpio_blink(void)
-{
-	int error;
-	int led_green = 137;
-	int t;
-	if ( gpio_is_valid(led_green) ){
-			pr_info("start of the module\n");
-			for(t = 0;t < 10 ;t++){
-				blink(led_green);
-			}
-			return 0;
-	}
-	//failed issue: The gpio_hello_world is not valid
-	else	{
-		gpio_free(137);
-		return -1;
-	}
-}
 
 int gpio_blink(void)
 {
+	int t;
+	int led_green = 137;
 	int t;
 
 	if (!gpio_is_vaild(137))
