@@ -48,6 +48,8 @@
 #include <linux/mutex.h>
 #include <linux/delay.h>
 
+/*Define LED Light*/
+#define led_green 137
 
 static const char *phy_speed_to_str(int speed)
 {
@@ -98,28 +100,23 @@ static const char *phy_state_to_str(enum phy_state st)
  * @Failed: return -1
  */
 
-void blink(int num)
-{
-	gpio_set_value(num, 1);
-	pr_info("wait\n");
-	msleep(100);
-	gpio_set_value(num, 0);
-	msleep(100);
-}
-
 int gpio_blink(void)
 {
 	int t;
-	int led_green = 137;
-	int t;
-
-	if (!gpio_is_vaild(137))
+	if ( !gpio_is_valid(led_green) )
 		return -1;
-
-	pr_info("start of the module\n");
-	for (t = 0;t < 10 ;t++)
-		blink(led_green);
-
+	pr_info("start of the blink function\n");
+	for (t = 0;t < 10 ;t++) {
+		pr_info("start the for loop\n");
+		msleep(150);
+		gpio_set_value(led_green,1);
+		pr_info("LED ON\n");
+		msleep(150);
+		gpio_set_value(led_green, 0);
+		pr_info("LED OFF\n");
+		msleep(100);
+		pr_info("end of the loop\n");
+	}
 	return 0;
 }
 
@@ -131,6 +128,7 @@ int gpio_blink(void)
 void phy_print_status(struct phy_device *phydev)
 {
 	int check_blink;
+	gpio_direction_output(led_green,true);
 
 	if (phydev->link) {
 		netdev_info(phydev->attached_dev,
