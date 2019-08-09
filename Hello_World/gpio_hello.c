@@ -24,76 +24,42 @@
 #include <linux/delay.h>
 
 
-static DEFINE_MUTEX(gpio_lock);
-
-
-/*
-struct gpio_edm_data {
-		unsigned int gpio;
-		unsigned int value;
-		const char * direction;
-		const char *desc;
-};
-*/
-/*
- truct platform_device {
-	const char	*name;
-	int		id;
-	bool		id_auto;
-	struct device	dev;
-	u32		num_resources;
-	struct resource	*resource;
-
-	const struct platform_device_id	*id_entry;
-	char *driver_override; // Driver name to force a match
-
-	// MFD cell pointer
-	struct mfd_cell *mfd_cell;
-
-	// arch specific additions
-	struct pdev_archdata	archdata;
-};
- */
-
-
-
-MODULE_LICENSE("Dual BSD/GPL");
+# define led_green 137
 
 static int __init gpio_hello_init(void)
 {
 	int error;
 	int t;
 
-	if ( gpio_is_valid(137) ){
-			pr_info("start of the module\n");
-			error = gpio_request(137,"gpio-led");
-			if (error < 0) {
+	pr_info("start of the module\n");
+	error = gpio_request(led_green,"gpio-led");
+	if (error < 0) {
 				pr_info("Failed to request GPIO %d, error %d\n",137, error);
 				return error;
-			}
-			gpio_direction_output(137,true);
-
-			for(t = 0;t < 5 ;t++){
-				gpio_set_value(137, true);
-				pr_info("wait\n");
-				msleep(50);
-				gpio_set_value(137, false);
-			}
-			return 0;
 	}
-	//failed issue: The gpio_hello_world is not valid
-	else	{
-		gpio_free(138);
-		return error;
+	//if the led_green is not valid
+	if ( !gpio_is_valid(led_green) ){
+		gpio_free(led_green);
+		return -1;
 	}
+	gpio_direction_output(led_green,true);
+	//for loop to blink led
+	for(t = 0;t < 10 ;t++){
+		msleep(100);
+		gpio_set_value(led_green, 1);
+		msleep(100);
+		gpio_set_value(led_green, 0);
+		msleep(100);
+	}
+	return 0;
 }
 
 
 static void __exit gpio_hello_exit(void)
 {
-	gpio_set_value(137,false);
+	gpio_set_value(led_green,0);
 	pr_info("end of the module\n");
-	gpio_free(137);
+	gpio_free(led_green);
 }
 //load module
 module_init(gpio_hello_init);
@@ -103,4 +69,5 @@ module_exit(gpio_hello_exit);
 
 
 MODULE_AUTHOR("Boring Chen <eric20021232000@gmail.com>");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("Dual BSD/GPL");
+
