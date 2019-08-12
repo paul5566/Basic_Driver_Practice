@@ -10,7 +10,6 @@
  * under  the terms of  the GNU General  Public License as published by the
  * Free Software Foundation;  either version 2 of the  License, or (at your
  * option) any later version.
- *
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
@@ -51,8 +50,17 @@
 #include <linux/kthread.h>//kthread_create()﹜kthread_run()
 #include <linux/version.h>
 
+
+#include <linux/time.h>
+#include <linux/init.h>
+#include <linux/errno.h>
+#include <linux/delay.h>
+
+
+
 /*Define LED Light*/
 #define led_green 137
+
 
 static const char *phy_speed_to_str(int speed)
 {
@@ -81,23 +89,23 @@ static const char *phy_speed_to_str(int speed)
 static const char *phy_state_to_str(enum phy_state st)
 {
 	switch (st) {
-	PHY_STATE_STR(DOWN)
-	PHY_STATE_STR(STARTING)
-	PHY_STATE_STR(READY)
-	PHY_STATE_STR(PENDING)
-	PHY_STATE_STR(UP)
-	PHY_STATE_STR(AN)
-	PHY_STATE_STR(RUNNING)
-	PHY_STATE_STR(NOLINK)
-	PHY_STATE_STR(FORCING)
-	PHY_STATE_STR(CHANGELINK)
-	PHY_STATE_STR(HALTED)
-	PHY_STATE_STR(RESUMING)
+		PHY_STATE_STR(DOWN)
+		PHY_STATE_STR(STARTING)
+		PHY_STATE_STR(READY)
+		PHY_STATE_STR(PENDING)
+		PHY_STATE_STR(UP)
+		PHY_STATE_STR(AN)
+		PHY_STATE_STR(RUNNING)
+		PHY_STATE_STR(NOLINK)
+		PHY_STATE_STR(FORCING)
+		PHY_STATE_STR(CHANGELINK)
+		PHY_STATE_STR(HALTED)
+		PHY_STATE_STR(RESUMING)
 	}
-
 	return NULL;
 }
-/**
+
+/*
  * gpio_blink function: - Convenience function to make notifiction
  *
  * Satement:
@@ -109,23 +117,36 @@ static int gpio_blink(void)
 {
 	int t;
 
+	struct timeval start={
+		.tv_sec=0,
+		.tv_usec=0
+	};
+
+	static struct timeval end={
+		.tv_sec=0,
+		.tv_usec=0
+	};
+
 	if (!gpio_is_valid(led_green))
 		return -1;
 
 	pr_info("start of the blink function\n");
-
 	gpio_direction_output(led_green,false);
+	pr_info("do_gettimeofday test begin.\n");
+	do_gettimeofday(&start);
 
-	for (t = 0;t < 50 ;t++) {
+	while(end.tv_sec-start.tv_sec < 5)
+	{
+		do_gettimeofday(&end);
+		pr_info("print diff time %d\n",end.tv_sec - start.tv_sec);
 		gpio_set_value(led_green, 1);
 		pr_info("LED ON\n");
 		msleep(150);
 		gpio_set_value(led_green, 0);
 		pr_info("LED OFF\n");
 		msleep(150);
-		pr_info("end of the loop\n");
 	}
-
+	gpio_free(led_green);
 	return 0;
 }
 
@@ -140,7 +161,6 @@ static int gpio_blink(void)
  * 		@Failed:return -1
  *		* the led of gpio is not valid
  */
-
 
 static int function_thread(void *d)
 {
@@ -157,7 +177,6 @@ static int function_thread(void *d)
 		}
 	return 0;
 }
-
 
 /**
  * phy_print_status - Convenience function to print out the current phy status
@@ -198,11 +217,11 @@ EXPORT_SYMBOL(phy_print_status);
  *
  * Returns 0 on success or < 0 on error.
  */
+
 static int phy_clear_interrupt(struct phy_device *phydev)
 {
 	if (phydev->drv->ack_interrupt)
 		return phydev->drv->ack_interrupt(phydev);
-
 	return 0;
 }
 
@@ -213,12 +232,12 @@ static int phy_clear_interrupt(struct phy_device *phydev)
  *
  * Returns 0 on success or < 0 on error.
  */
+
 static int phy_config_interrupt(struct phy_device *phydev, u32 interrupts)
 {
 	phydev->interrupts = interrupts;
 	if (phydev->drv->config_intr)
 		return phydev->drv->config_intr(phydev);
-
 	return 0;
 }
 
