@@ -13,25 +13,34 @@
 #include <linux/errno.h>
 #include <linux/delay.h>
 
-
-static struct timeval start={
-	.tv_sec=0,
-	.tv_usec=0
-};
-static struct timeval end={
-	.tv_sec=0,
-	.tv_usec=0
-};
-
+/*
+ *	When we create the thread, the most horriable thing is
+ *	the race condition,hence it's very stupid to declare the
+ *	variable that other resource may use it
+ */
 
 
 int __init timer_init(void)
 {
-	printk("<0>do_gettimeofday test begin.\n");
+	static struct timeval start={
+		.tv_sec=0,
+		.tv_usec=0
+	};
+
+	static struct timeval end={
+		.tv_sec=0,
+		.tv_usec=0
+	};
+
+	//printk("<0>do_gettimeofday test begin.\n");
 	do_gettimeofday(&start);
+	pr_info("the start time in %ldsecs\n",start.tv_sec);
+	pr_info("the start time in %ldusec\n",start.tv_usec);
 	msleep(3000);
 	do_gettimeofday(&end);
-	pr_info("The time passed in %ld second \n",end.tv_usec-start.tv_usec);//sec
+	pr_info("%ld ",end.tv_usec-start.tv_usec);
+	pr_info("the end time in %ldsecs\n",end.tv_sec);
+	pr_info("the end time in %ldusec\n",end.tv_usec);
 	return 0;
 }
 
@@ -42,11 +51,7 @@ void __exit timer_exit(void)
 }
 
 module_init(timer_init);
-
 module_exit(timer_exit);
-
-
-
 
 MODULE_AUTHOR("Boring Chen <eric20021232000@gmail.com>");
 MODULE_LICENSE("Dual BSD/GPL");

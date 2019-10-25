@@ -20,10 +20,10 @@
  *
  *
  */
-#define GET_USR 0
-#define PUT_USR 1
-#define COPY_FROM_USR 2
-#define COPY_TO_USR 3
+#define CASE_ZERO 0
+#define CASE_ONE 1
+#define CASE_TWO 2
+#define CASE_THREE 3
 
 static int dev_open(struct inode *inode, struct file *file)
 {
@@ -37,55 +37,28 @@ static int	dev_release(struct inode *inode, struct file *file)
     return 0;
 }
 
-static ssize_t dev_read(struct file *fil, char __user * buf, size_t size,
-loff_t * ppos)
-{
-	pr_info("MYCHARDEV: Device READ\n");
-	return 0;
-}
 
 static long dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	//int return_cal = 1;
-	//int buffer_val = 0;
-	int err;
 	char buffer[8];
 	char copy_to_usr[16] = "Roger That";
 	/*get data */
-	pr_info("the cmd val is %d\n",cmd);
+	pr_info("FUNCTION: %s & cmd val is %d\n",__func__,cmd);
 	switch(cmd) {
-        case 0:
-			if (err != 0){
-				pr_err("%s: get user failed\n",__func__);
-				break;
-			}
-			pr_info("excuted GET USER sucessed\n");
+        case CASE_ZERO:
+			pr_info("excuted case0 sucessed\n");
 			break;
-        case 1:
-			if (err != 0){
-				pr_err("%s: put user failed\n",__func__);
-				break;
-			}
-			pr_info("excuted PUT USER sucessed\n");
-            break;
-        case 2:
- 			err = copy_from_user(&buffer ,(void __user *)arg, sizeof(buffer));
-			if (err != 0){
-				pr_err("%s: copy from user failed\n",__func__);
-				break;
-			}
-			pr_info("buffer received from user: %s\n", &buffer);
-            break;
-        case 3:
-			err = copy_to_user((void __user *)arg,&copy_to_usr,sizeof(copy_to_usr));
-			if (err != 0){
-				pr_err("%s: copy to user failed\n",__func__);
-				break;
-			}
-        default:
+        case CASE_ONE:
+			pr_info("excuted cased1 sucessed\n");
+			break;
+        case CASE_TWO:
+			pr_info("excuted cased2 sucessed\n");
+			break;
+		default:
             pr_info("Unvailbe Command,function don't support \n");
+			break;
     }
-   	pr_info("MYCHARDEV: Device ioctl\n");
+   	pr_info("MYCHARDEV12323213: Device ioctl\n");
     return 0;
 }
 
@@ -94,7 +67,6 @@ static const struct file_operations mychardev_fops = {
     .open       = dev_open,
     .release    = dev_release,
     .unlocked_ioctl = dev_ioctl,
-	.read = dev_read
 };
 
 struct mychar_device_data {

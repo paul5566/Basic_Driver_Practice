@@ -11,11 +11,12 @@
 static int foo_thread(void *d)
 {
 	int i;
+	int dummy = *(int *)d;
 
 	// TODO: Put LED operation here
 
 	for (i = 0; i < 10; ++i) {
-		pr_info("Hi! I'm %s (%d)\n", __func__, i);
+		pr_info("Hi! I'm %s (%d), dummy = %d\n", __func__, i, dummy);
 		msleep(1000);
 	}
 
@@ -25,8 +26,9 @@ static int foo_thread(void *d)
 static __init int my_start_thread(void)
 {
 	struct task_struct *t;
+	int tmp = 10;
 
-	t = kthread_run(foo_thread, NULL, "foo_thread");
+	t = kthread_run(foo_thread, &tmp, "foo_thread");
 	if (IS_ERR(t)) {
 		pr_err("foo thread create failed!\n");
 		return -1;

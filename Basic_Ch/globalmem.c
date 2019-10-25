@@ -1,6 +1,5 @@
 /*======================================================================
     A globalmem driver as an example of char device drivers
-
     The initial developer of the original code is Baohua Song
     <author@linuxdriver.cn>. All Rights Reserved.
 ======================================================================*/
